@@ -1,6 +1,6 @@
-```
-K8s installation & bootstrapping - Hard way on VMs hosted on virtualBox
-```
+
+# K8s installation & bootstrapping - Hard way on VMs hosted on virtualBox
+
 ## Cluster Topology:
  - Master node: 2
  - Worker node: 2
