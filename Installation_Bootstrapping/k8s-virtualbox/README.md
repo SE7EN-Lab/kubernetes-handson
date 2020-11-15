@@ -334,7 +334,33 @@ From administrative client,
 - Verify the ability to execute commands in container.
     - Print nginx version in the nginx container.
 
-## Stage 14: Set-up Logging & Monitoring Solution
+## Stage 14: Install Helm 3
+From administrative client,
+- Download the helm binary tar.gz package from Helm official repository.
+- Unpack it.
+- Find the helm binary in the unpacked directory, and move it to /usr/local/bin/helm
+- Run helm help to confirm the installation.
+- Initialize a Helm chart repository => helm repo add <repo-name> <URL of the stable repository>
+- Search stable repo for charts => helm search repo <repo-name>
+- Install chart => helm install <Name of the chart>
+- List the installed charts => helm list
+- Un-install helm charts => helm uninstall <Name of the chart>
+- Verify the status of charts => helm status <Name of the chart>
+
+
+## Stage 15: Set-up Promethus Monitoring Solution
+- Install kube-prometheus-stack operator via Helm chart. The stack contains the below components.
+        - kube-state-metrics
+        - prometheus node exporter
+        - ptometheus alert manager
+        - grafana data visualizer
+    - Create a namespace "kube-monitoring".
+    - Add helm chart repo for kube-prometheus-stack community.
+    - Install helm chart  on namespace "kube-monitoring".
+
+
+
+
 
 
 
