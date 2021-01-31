@@ -1,7 +1,7 @@
 
 # K8s installation & bootstrapping - Hard way on VMs hosted on virtualBox
 
-## Cluster Topology:
+## Cluster Topology: Stacked control plane nodes (etcd & control plane nodes co-located)
  - Master node: 2
  - Worker node: 2
  - Load Balancer: 1
