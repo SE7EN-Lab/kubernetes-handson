@@ -53,7 +53,7 @@
             - Generate CSR for admin user using its private key (admin user must be part of system:masters group) to perform adminstrative actions on K8s cluster via kubectl
             - Sign CSR for admin user using CA's identity(ca.crt & ca.key) that auto generates admin user certificate (admin.crt)
             - Whoever has access to admin.key & admin.crt can gain admin access to K8s cluster.
-            - kubectl must be configured with above details to perform administrative actions on K8s
+            - kubectl must be configured with above details to perform administrative actions on K8s cluster.
         
         - kube-controller-manager
             - Generate private key for controller manager (kube-controller-manager.key)
@@ -99,7 +99,7 @@
             - Sign CSR for kube-apiserver using CA's identity(ca.crt & ca.key) that auto generates kube-apiserver.crt
 
         - ETCD Server
-            - etcd-server certificate generattion requires address of all servers part of the ETCD cluster.
+            - etcd-server certificate generation requires address of all servers part of the ETCD cluster.
             - Since openssl command can't take alternate names as cmdline parameters. conf file (openssl-etcd.cnf) is created & supplied as openssl cmdline parameters.
             - Generate private key for etcd-server (etcd-server.key)
             - Generate CSR for etcd-server using its private key
@@ -219,7 +219,7 @@
     - Nodes can retrieve the signed certificate from the Kubernetes CA
     - Nodes can generate a kube-config file using this certificate by themselves
     - Nodes can start and join the cluster by themselves
-    - Nodes can renew certificates when they expire by themselves
+    - Nodes can renew certificates when they are due to expire by themselves
 - Requirement for TLS bootstrapping
     - Certificates API: The Certificate API (as discussed in the lecture) provides a set of APIs on Kubernetes that can help us manage certificates (Create CSR, Get them signed by CA, Retrieve signed certificate etc). The worker nodes (kubelets) have the ability to use this API to get certificates signed by the Kubernetes CA.
 - Pre Requisites:
@@ -261,7 +261,7 @@
     --rotate-server-certificates: Requests for server certificates on bootstrap and rotates them when they expire.
 - Step 8: Configure kube-proxy for worker  node
     - Move kube-proxy.kubeconfig to data directory.
-    - Create kube proxy config definition file => kube-prooxy-config.yaml
+    - Create kube proxy config definition file => kube-proxy-config.yaml
     - Create Systemd unit file for kube-proxy => kube-proxy.service
 - Step 9 : Start worker services.
 - Step 10: Approve CSR from master node by executing kubectl get csr and kubectl certificate approve command line.
@@ -274,6 +274,7 @@
  - Verify the status of cluster components and nodes.
  - It is Expected that the worker node to be in a NotReady state. Worker nodes will come into Ready state once networking is configured.
  Expected:
+ ```
     kubectl get componentstatuses
     NAME                 STATUS    MESSAGE             ERROR
     scheduler            Healthy   ok                  
@@ -283,7 +284,9 @@
     kubectl get nodes
     NAME       STATUS     ROLES    AGE    VERSION
     worker-1   NotReady   <none>   5d4h   v1.18.0
-    worker-2   NotReady   <none>   5d1h   v1.18.0      
+    worker-2   NotReady   <none>   5d1h   v1.18.0
+```
+
 ```
  Learning:
     Make sure client & server components are of same version.
@@ -295,16 +298,19 @@
 - Deploy the weave network only on master-1.
 - weave use POD CIDR 10.32.0.0/12 by default.
 - Ensure that weave-net-* pods are running in kube-system namespace
+```
     kubectl get pods -A --kubeconfig admin.kubeconfig 
     NAMESPACE     NAME              READY   STATUS              RESTARTS   AGE
     kube-system   weave-net-64v5b   0/2     ContainerCreating   0          79s
     kube-system   weave-net-q7xxn   0/2     ContainerCreating   0          79s
+```
 - Verify the status of registered nodes in the cluster to confirm the STATUS is "Ready"
+```
     kubectl get nodes --kubeconfig admin.kubeconfig 
     NAME       STATUS   ROLES    AGE    VERSION
     worker-1   Ready    <none>   5d4h   v1.18.0
     worker-2   Ready    <none>   5d2h   v1.18.0
-
+```
 ## Stage 11: kube-apiserver to kubelet access
 - Configure RBAC permissions to allow kube-apiserver to access kubelet API on each worker node for retriving metrics, logs & execute commands in pods.
 - From administration client, Create a clusterRole "system:kube-apiserver-to-kubelet" with permissions to access kubelet API to manage pods.
@@ -330,7 +336,7 @@ From administrative client,
     - View the logs of pods (container).
 - Verify the ability to access applications remotely using port forwarding (service).
     - Expose the nginx web server deployment as nodePort on port 31691. ie. 80(targetPort) =>31691(nodePort)
-    - Hit the URL to view the homepage of nginx => http://<ip-address-of-worker-node>:<nodePort>
+    - Hit the URL to view the homepage of nginx => http://ip-address-of-worker-node:nodePort
 - Verify the ability to execute commands in container.
     - Print nginx version in the nginx container.
 
