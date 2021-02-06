@@ -71,7 +71,7 @@ Vagrant.configure("2") do |config|
         end
 
         node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
-        node.vm.provision "file", source: "./ubuntu/cert_verify.sh", destination: "$HOME/"
+        #node.vm.provision "file", source: "./ubuntu/cert_verify.sh", destination: "$HOME/"
 
       end
   end

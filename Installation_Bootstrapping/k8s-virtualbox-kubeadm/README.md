@@ -16,7 +16,7 @@
   - kubelet: v1.19
   - VirtualBox: v6.1
   - Vagrant: v2.2
-  - Docker container runtime: v20.10
+  - Docker container runtime: v19.03
   - ETCD: 
   - Weave
   - CoreDNS: 
@@ -60,6 +60,7 @@
  ```
  - Make sure all nodes allow for network forwarding in IP tables. Run the below command.
  ```
+ modprobe br_netfilter
  sysctl net.bridge.bridge-nf-call-iptables=1
  ```
  - Make sure all worker nodes have docker installed.
@@ -68,23 +69,50 @@
  - Linux laptop is our administrative client & has SSH access to all other nodes.
  - Install Kubectl - Kubernetes command line tool to interact with K8s cluster.
 
-## Stage 3: Configure Loadbalancer for kube-apiserver
- - Create a load balancer with a name that resolves to DNS.
- - Add the first control plane nodes to the load balancer and test the connection:
+## Stage 3: Install & Configure Network Loadbalancer for kube-apiserver on loadbalancer node
+ - Install HAProxy
+ ```
+ sudo apt-get update && sudo apt-get install -y haproxy
+ ```
+ - Configure target group of HAProxy to all master nodes.
+ ```
+ cat <<EOF | sudo tee /etc/haproxy/haproxy.cfg 
+frontend kubernetes
+    bind 192.168.6.30:6443
+    option tcplog
+    mode tcp
+    default_backend kubernetes-master-nodes
+
+backend kubernetes-master-nodes
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    server kmaster-1 192.168.6.11:6443 check fall 3 rise 2
+    server kmaster-2 192.168.6.12:6443 check fall 3 rise 2
+EOF
+```
+ - Re-start HAProxy server process.
+ - Test the connection using the below command
 ```
 nc -v LOAD_BALANCER_IP PORT
 ```
-- Add the remaining control plane nodes to the load balancer target group.
+- Expected output: 
+```
+Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
+```
 
 ## Stage 4: Install kubeadm tool, kubelet, kubectl(optional) on all nodes
  - Pre-requisites:
     - Ensure MAC address and product_uuid are unique for every node.
     - Check network adapters and letting iptables see bridged traffic on all nodes.
     - Check requried ports are opened on all nodes.
-    - Ensure container runtime is already installed on all nodes.
  - Kubeadm doesn't install or manage kubelet, kubectl.
  - Ensure version of kubelet, kubectl adheres to version skew policy of control plane components.
-
+ - Install docker runtime on all nodes except loadbalancer node.
+ - Install kubeadm on all nodes except loadbalancer node.
+ - Install kubelet on all nodes except loadabalancer node.
+ - Verify the version of the docker, kubeadm, kubelet on all nodes expect loadbalancer node.
+ 
 ## Stage 5: Initialize Control plane node
 
 ## Stage 6: Install Pod Network add-on
