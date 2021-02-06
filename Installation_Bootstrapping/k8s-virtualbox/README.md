@@ -5,6 +5,20 @@
  - Master node: 2
  - Worker node: 2
  - Load Balancer: 1
+
+ ## Compute Resources:
+ | VM | VM Name| Description | IP | Forwarded Port |
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | master-1 | kubernetes-ha-master-1 | Master | 192.168.5.11 | 2711 |
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | master-2 | kubernetes-ha-master-2 | Master | 192.168.5.12 | 2712 |
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | worker-1 | kubernetes-ha-worker-1 | Worker | 192.168.5.21 | 2721 |
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | worker-2 | kubernetes-ha-worker-2 | worker | 192.168.5.22 | 2722 |
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | loadbalancer | kubernetes-ha-lb | Loadbalancer | 192.168.5.30 | 2730 |
+
  
  ## Specification:
   - Kubernetes: v1.18
@@ -211,7 +225,7 @@
                 - Start worker services.
                 - From master node, verify the status of worker node => Worker status: NotReady is expected as the networking isn't configured yet.
 
-## Stage 8: Bootstrapping kubernetes worker node - TLS way (Preffered option for huge cluster)
+## Stage 8: Bootstrapping kubernetes worker node - TLS way (Prefered option for huge cluster)
 - With TLS bootstrapping, the manual process of managing worker node certificates & config is eliminated.
     - Nodes can generate certificate key pairs by themselves
     - Nodes can generate certificate signing request by themselves
