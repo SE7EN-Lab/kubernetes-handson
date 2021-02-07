@@ -7,18 +7,14 @@
  - Load Balancer: 1
 
  ## Compute Resources:
- | VM | VM Name| Description | IP | Forwarded Port |
- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
- | master-1 | kubernetes-ha-master-1 | Master | 192.168.5.11 | 2711 |
- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
- | master-2 | kubernetes-ha-master-2 | Master | 192.168.5.12 | 2712 |
- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
- | worker-1 | kubernetes-ha-worker-1 | Worker | 192.168.5.21 | 2721 |
- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
- | worker-2 | kubernetes-ha-worker-2 | worker | 192.168.5.22 | 2722 |
- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
- | loadbalancer | kubernetes-ha-lb | Loadbalancer | 192.168.5.30 | 2730 |
-
+ 
+    | VM            |  VM Name               | Purpose       | IP           | Forwarded Port   |
+    | ------------  | ---------------------- |:-------------:| ------------:| ----------------:|
+    | master-1      | kubernetes-ha-master-1 | Master        | 192.168.5.11 |     2711         |
+    | master-2      | kubernetes-ha-master-2 | Master        | 192.168.5.12 |     2712         |
+    | worker-1      | kubernetes-ha-worker-1 | Worker        | 192.168.5.21 |     2721         |
+    | worker-2      | kubernetes-ha-worker-2 | Worker        | 192.168.5.22 |     2722         |
+    | loadbalancer  | kubernetes-ha-lb       | LoadBalancer  | 192.168.5.30 |     2730         |
  
  ## Specification:
   - Kubernetes: v1.18
@@ -34,6 +30,7 @@
   - ETCD: v3.3.9
   - Weave
   - CoreDNS: v1.2.2
+  - POD Network CIDR: 10.32.0.0/12 (default weaveNet value)
 
 ## k8s cluster Port details:
 
