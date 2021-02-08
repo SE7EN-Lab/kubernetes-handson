@@ -18,8 +18,6 @@
   - Vagrant: v2.2
   - Docker container runtime: v19.03
   - ETCD: v3.4.9
-  - Weave
-  - CoreDNS: 
   - POD Network CIDR: 10.32.0.0/12 (default weaveNet value)
 
 ## Compute Resoources:
@@ -121,14 +119,14 @@ Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
 ## Stage 5: Initialize Control plane node
  - kubeadm init commandline used for initializing control plane node.
  - Re-run kubeadm init, the cluster must be tear-downed.
- - As a pre-requsite verify connectivity to gcr.io container image registry across all nodes except loadbalancer
+ - As a pre-requisite verify connectivity to gcr.io container image registry across all nodes except loadbalancer
       ```
       sudo kubeadm config images pull
       ```
  - Execute the following on any one of the control plane nodes.
     - Initialize the control plan
     ```
-    sudo kubeadm init --v=5 --control-plane-endpoint "LOAD_BALANCER_DNS:LOAD_BALANCER_PORT" --kubernetes-version "stable-1.19" --upload-certs
+    sudo kubeadm init --v=5 --control-plane-endpoint "LOAD_BALANCER_DNS:LOAD_BALANCER_PORT" --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE" --kubernetes-version "stable-1.19" --upload-certs --pod-network-cidr "10.32.0.0/12"
     ```
     - Save the output on a file.
     ```
@@ -146,9 +144,9 @@ Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
 
 You can now join any number of the control-plane node running the following command on each as root:
 
-  kubeadm join 192.168.6.30:6443 --token omn7m0.1ikvtc0x6f9xqwmq \
-    --discovery-token-ca-cert-hash sha256:085a86eea88e6d4a167e9eb9d9fdd19e9706df321e3565ba4b8b2894f8a0c9b5 \
-    --control-plane --certificate-key 5e0f3f4e6d4b5202addfcd3d6932eb7f4c05e6df07cb62235cb7085cc20a0654
+  kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
+    --discovery-token-ca-cert-hash sha256:e6f3eda21f36aa77d2ea031f4437ff12ecc4e421a1d9a12c672fe4183a26d5fe \
+    --control-plane --certificate-key 6ff6040a02b60fb990e6dc5b6421324fd9e2785b8971fa2eaf912b394e4ac924
 
 Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
 As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
@@ -156,8 +154,8 @@ As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you c
 
 Then you can join any number of worker nodes by running the following on each as root:
 
-kubeadm join 192.168.6.30:6443 --token omn7m0.1ikvtc0x6f9xqwmq \
-    --discovery-token-ca-cert-hash sha256:085a86eea88e6d4a167e9eb9d9fdd19e9706df321e3565ba4b8b2894f8a0c9b5 
+kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
+    --discovery-token-ca-cert-hash sha256:e6f3eda21f36aa77d2ea031f4437ff12ecc4e421a1d9a12c672fe4183a26d5fe
     ```
  - Verify the Cluster & component status
     ```
@@ -169,60 +167,80 @@ kubeadm join 192.168.6.30:6443 --token omn7m0.1ikvtc0x6f9xqwmq \
     ```
 ## Stage 6: Join other control plane nodes
  - SSH to other control plane nodes and run kubeadm join commandline for control plane.
+ - Ensure that --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE_BEING_JOINED" is appended to kubeadm join commandline.
+ - Verify the joining of control plane nodes by launching
  ```
-
-  ```
-  - Learning: Before re-tring Kubeadm join command on nodes, Run sudo kubeadm reset -f 
+ sudo kubectl get nodes --kubeconfig=/etc/kubernetes/admin.conf
+ ```
+ - Learning: Before re-tring Kubeadm init/join command on nodes, Run >sudo kubeadm reset -f 
 
 ## Stage 7: Install Pod Network add-on
  - Execute the following on all nodes except loadbalancer node
       ```
-      sudo kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(sudo kubectl version --kubeconfig=/etc/kubernetes/admin.conf | base64 | tr -d '\n')" --kubeconfig=/etc/kubernetes/admin.conf
+      sudo kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(sudo kubectl version | base64 | tr -d '\n')"
       ```
-  - List all objects under kube-system namespace
+  - List & verify all objects under kube-system namespace using the below command
   ```
-  vagrant@kmaster-1:~$ sudo kubectl get all -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
-NAME                                    READY   STATUS    RESTARTS   AGE
-pod/coredns-f9fd979d6-2lf75             1/1     Running   0          26m
-pod/coredns-f9fd979d6-m4jtm             1/1     Running   0          26m
-pod/etcd-kmaster-1                      1/1     Running   0          27m
-pod/kube-apiserver-kmaster-1            1/1     Running   0          27m
-pod/kube-controller-manager-kmaster-1   1/1     Running   0          27m
-pod/kube-proxy-cg8pj                    1/1     Running   0          26m
-pod/kube-scheduler-kmaster-1            1/1     Running   0          27m
-pod/weave-net-tz2np                     2/2     Running   1          76s
+  sudo kubectl get all -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
+  ```
 
-NAME               TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
-service/kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   27m
-
-NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   27m
-daemonset.apps/weave-net    1         1         1       1            1           <none>                   76s
-
-NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/coredns   2/2     2            2           27m
-
-NAME                                DESIRED   CURRENT   READY   AGE
-replicaset.apps/coredns-f9fd979d6   2         2         2       26m
-    ```
-
-## Stage 7: Join worker nodes to cluster
+## Stage 8: Join worker nodes to cluster
  - SSH to all worker nodes.
- - As a pre-requsite verify connectivity to gcr.io container image registry across all nodes except loadbalancer
-      ```
-      sudo kubeadm config images pull
-      ```
  - Run kubeadm join command for all worker nodes.
- ```
-
- ```
  - Verify the status of joining.
   From control plane node. Execute the below command and output must list all nodes in STATUS:Ready
   ```
   sudo kubectl get nodes --kubeconfig=/etc/kubernetes/admin.config
   ```
+## Stage 9: Configure administrative client
+ - Ensure that client node has kubectl installed that aligns with kubernetes version of the cluster that you wish to talk.
+ - From control plane node, Transfer /etc/kubernetes/admin.conf to ~/.kube/config of administrative client
+ - Verify kubectl commands to confirm that you are talking to k8s cluster via Loadbalancer.
 
-## Stage 8: Configure administrative client
+## Stage 10: Smoke test the cluster
+ - Execute the following checks against the cluster from adminstrative client
+    - Data Encryption check
+        - Create a generic secret
+        ```
+        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config create secret generic k8s-data-encrpt --from-literal="mykey=foo"
+        ```
+        - Confirm creation of secret
+        ```
+        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config get secret k8s-data-encrpt
+        ```
+        - Delete secret
+        ```
+        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config delete secret k8s-data-encrpt
+        ```
+    - Deployment check
+        - Create a deployment for nginx and verify
+        ```
+        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config create deployment my-web-server --image=nginx
+        sudo kubectl --kubeconfig=/home/rmansing/.kube/config get deployment
+        sudo kubectl --kubeconfig=/home/rmansing/.kube/config get pods
+        ```
+ - Service check
+    - Expose the deployment on node ports
+    ```
+    sudo kubectl --kubeconfig=/home/rmansing/.kube/config expose deployment  my-web-server --type=NodePort --port 80
+    sudo kubectl --kubeconfig=/home/rmansing/.kube/config get svc my-web-server
+    ```
+    - Verify the web server from any of the woker node
+    ```
+    curl http://IP_ADDRESS_OF_WORKER_NODE:NODEPORT-NO 
+    ```
+ - Logging check
+    - Verify the logs from pod of my-web-server deployment
+    ```
+    POD_NAME=$(sudo kubectl --kubeconfig=/home/rmansing/.kube/config get pods -l app=my-web-server -o jsonpath="{.items[0].metadata.name}")
+    sudo kubectl --kubeconfig=/home/rmansing/.kube/config logs $POD_NAME
+    ```
+ - Exec check
+    - Execute a command from inside the container of the pod.
+    ```
+    sudo kubectl --kubeconfig=/home/rmansing/.kube/config exec -it $POD_NAME -- nginx -v
+    ```
+
 
 
 
