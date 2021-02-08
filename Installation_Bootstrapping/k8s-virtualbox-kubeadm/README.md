@@ -129,34 +129,8 @@ Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
     sudo kubeadm init --v=5 --control-plane-endpoint "LOAD_BALANCER_DNS:LOAD_BALANCER_PORT" --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE" --kubernetes-version "stable-1.19" --upload-certs --pod-network-cidr "10.32.0.0/12"
     ```
     - Save the output on a file.
-    ```
-    Your Kubernetes control-plane has initialized successfully!
+    - The bootstrap token is valid for 24 hrs. Beyond that a new join token must be generated using kubeadm token create --print-join-command from control plane node.
 
-To start using your cluster, you need to run the following as a regular user:
-
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-  https://kubernetes.io/docs/concepts/cluster-administration/addons/
-
-You can now join any number of the control-plane node running the following command on each as root:
-
-  kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
-    --discovery-token-ca-cert-hash sha256:e6f3eda21f36aa77d2ea031f4437ff12ecc4e421a1d9a12c672fe4183a26d5fe \
-    --control-plane --certificate-key 6ff6040a02b60fb990e6dc5b6421324fd9e2785b8971fa2eaf912b394e4ac924
-
-Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
-As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
-"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
-
-Then you can join any number of worker nodes by running the following on each as root:
-
-kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
-    --discovery-token-ca-cert-hash sha256:e6f3eda21f36aa77d2ea031f4437ff12ecc4e421a1d9a12c672fe4183a26d5fe
-    ```
  - Verify the Cluster & component status
     ```
       sudo kubectl cluster-info --kubeconfig=/etc/kubernetes/admin.conf
@@ -180,9 +154,9 @@ kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
       sudo kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(sudo kubectl version | base64 | tr -d '\n')"
       ```
   - List & verify all objects under kube-system namespace using the below command
-  ```
-  sudo kubectl get all -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
-  ```
+      ```
+      sudo kubectl get all -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
+      ```
 
 ## Stage 8: Join worker nodes to cluster
  - SSH to all worker nodes.
@@ -194,7 +168,8 @@ kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
   ```
 ## Stage 9: Configure administrative client
  - Ensure that client node has kubectl installed that aligns with kubernetes version of the cluster that you wish to talk.
- - From control plane node, Transfer /etc/kubernetes/admin.conf to ~/.kube/config of administrative client
+ - From control plane node, Transfer /etc/kubernetes/admin.conf to ~/.kube/config of administrative client.
+ - Export KUBECONFIG env variable => export KUBECONFIG=/home/rmansing/.kube/config
  - Verify kubectl commands to confirm that you are talking to k8s cluster via Loadbalancer.
 
 ## Stage 10: Smoke test the cluster
@@ -202,28 +177,28 @@ kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
     - Data Encryption check
         - Create a generic secret
         ```
-        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config create secret generic k8s-data-encrpt --from-literal="mykey=foo"
+        kubectl create secret generic k8s-data-encrpt --from-literal="mykey=foo"
         ```
         - Confirm creation of secret
         ```
-        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config get secret k8s-data-encrpt
+        kubectl get secret k8s-data-encrpt
         ```
         - Delete secret
         ```
-        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config delete secret k8s-data-encrpt
+        kubectl delete secret k8s-data-encrpt
         ```
     - Deployment check
         - Create a deployment for nginx and verify
         ```
-        sudo kubectl --kubeconfig=~/home/rmansing/.kube/config create deployment my-web-server --image=nginx
-        sudo kubectl --kubeconfig=/home/rmansing/.kube/config get deployment
-        sudo kubectl --kubeconfig=/home/rmansing/.kube/config get pods
+        kubectl create deployment my-web-server --image=nginx
+        kubectl get deployment
+        kubectl get pods
         ```
  - Service check
     - Expose the deployment on node ports
     ```
-    sudo kubectl --kubeconfig=/home/rmansing/.kube/config expose deployment  my-web-server --type=NodePort --port 80
-    sudo kubectl --kubeconfig=/home/rmansing/.kube/config get svc my-web-server
+    kubectl expose deployment  my-web-server --type=NodePort --port 80
+    kubectl get svc my-web-server
     ```
     - Verify the web server from any of the woker node
     ```
@@ -232,19 +207,11 @@ kubeadm join 192.168.6.30:6443 --token qm5poy.y0291egeemm500u2 \
  - Logging check
     - Verify the logs from pod of my-web-server deployment
     ```
-    POD_NAME=$(sudo kubectl --kubeconfig=/home/rmansing/.kube/config get pods -l app=my-web-server -o jsonpath="{.items[0].metadata.name}")
-    sudo kubectl --kubeconfig=/home/rmansing/.kube/config logs $POD_NAME
+    POD_NAME=$(kubectl get pods -l app=my-web-server -o jsonpath="{.items[0].metadata.name}")
+    kubectl logs $POD_NAME
     ```
  - Exec check
     - Execute a command from inside the container of the pod.
     ```
-    sudo kubectl --kubeconfig=/home/rmansing/.kube/config exec -it $POD_NAME -- nginx -v
+    kubectl exec -it $POD_NAME -- nginx -v
     ```
-
-
-
-
-
-
-
-
