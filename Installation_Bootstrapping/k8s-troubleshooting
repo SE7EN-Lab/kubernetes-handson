@@ -1,0 +1,4 @@
+kubeadm config view
+kubectl describe nodes
+journalctl -u <systemd-unit-name>
+systemctl status <systemd-unit-name>
