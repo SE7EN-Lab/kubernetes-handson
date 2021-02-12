@@ -215,3 +215,78 @@ Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
     ```
     kubectl exec -it $POD_NAME -- nginx -v
     ```
+## Stage 11: Upgrade kubeadm cluster to v1.20.2
+ - Upgrading control plane nodes.
+    - Upgrade procedure on control plane nodes must be executed on node at a time. SSH to one of the control plane node and execute the following.
+    - Upgrade kubeadm binary to v1.20.2
+    - Verify the kubeadm binary version post upgrade.
+    - Check kubeadm upgrade plan.
+        ```
+        sudo kubeadm upgrade plan
+        ```
+    - Based on the path of upgrade plan, Choose the version to upgrade and run the below command.
+        ```
+        sudo kubeadm upgrade apply v1.20.x
+        
+        Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   CURRENT       AVAILABLE
+kubelet     4 x v1.19.0   v1.20.2
+
+Upgrade to the latest stable version:
+
+COMPONENT                 CURRENT   AVAILABLE
+kube-apiserver            v1.19.7   v1.20.2
+kube-controller-manager   v1.19.7   v1.20.2
+kube-scheduler            v1.19.7   v1.20.2
+kube-proxy                v1.19.7   v1.20.2
+CoreDNS                   1.7.0     1.7.0
+etcd                      3.4.9-1   3.4.13-0
+
+You can now apply the upgrade by executing the following command:
+
+        kubeadm upgrade apply v1.20.2
+
+Note: Before you can perform this upgrade, you have to update kubeadm to v1.20.2.
+
+        ```
+    - Confirm that your cluster is upgraded.
+    - Manually upgrade your CNI provider plugin.
+        ```
+        kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+        ```
+ - Upgrade other control plane nodes
+    - SSH to control plan node and perform the following.
+    - Upgrade kubeadm binary.
+    - Verify the kubeadm binary version post upgrade.
+    - Launch upgrade.
+        ```
+        sudo kubeadm upgrade node
+        ```
+    - Not required to upgrade CNI plugin.
+    - Drain the control plan node one at a time to prepare for maintenance by marking it un-schedulable & evicting workloads.
+    - Launch >kubectl drain <node-to-drain> --ignore-daemonsets
+    - Upgrade Kubelet and kubectl on all control plane nodes to v1.20.2-00
+    - Restart kubelet on all control plane nodes.
+        ```
+        sudo systemctl daemon-reload
+        sudo systemctl restart kubelet
+        ```
+    - Uncordon the control plane node.
+    - Launch >kubectl uncordon <node-to-uncordon>
+- Upgrade worker nodes.
+    - To be executed on one node at a time basis without compromising the min required capacity for running workloads.
+    - Upgrade kubeadm binary.
+    - Verify version of kubeadm binary post upgrade.
+    - Launch upgrade- this upgrades the local kubelet config >sudo kubeadm upgrade node.
+    - Drain worker node.
+    - Upgrade kubelet an kubectl binary to v1.20.2-00
+    - Re-start kubelet on worker node.
+    - Uncordon the worker node.
+- Upgrade kubectl binary of the administrative client to v1.20.2-00
+- Verify the status of the cluster and workloads.
+    ```
+    kubectl get nodes -o wide
+    kubectl get all -o wide
+    ```
+
+
