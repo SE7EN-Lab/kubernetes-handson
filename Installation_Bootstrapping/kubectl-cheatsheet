@@ -1,3 +1,5 @@
+https://computingforgeeks.com/kubectl-cheat-sheet-for-kubernetes-cka-exam-prep/
+
 kubeadm config view
 kubectl describe nodes
 journalctl -u <systemd-unit-name>
