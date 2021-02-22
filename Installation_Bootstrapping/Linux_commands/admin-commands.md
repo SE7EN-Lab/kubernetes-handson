@@ -66,6 +66,12 @@
 			firewall-cmd --zone=<zonename> --list-ports
 		
  # Networking commands			
+	# List IP address on Linux
+		ip addr
+	
+	# List network interfaces on Linux
+		ip link show
+		
 	# List all open ports on Linux
 		netstat -lntu
 	
@@ -77,6 +83,8 @@
 	
 	# Start a tcp connection to a specific host and port
 		nc <host-ip> <port-no>
+	
+	# nslookup command
  
  # Bash commands
 	# List the history of comands executed on bash
@@ -171,11 +179,21 @@
 		# Query all errors for services since last reboot
 				journalctl -p 3 -xb
 				
+# User management commands
+		# Create a user group on linux
+				groupadd <group-name>
+				
+		# Add user to a specific group with home dir on Linux
+				useradd  -m -g <group-name> <user-name>
+				id <user-name>
+				
+		# Set password for the user n Linux
+				passwd <user-name>
 		
-	
-	
- 
- # process management commands
+		# View the expiry details of user account on Linux
+				chage -l <user-name>
+		
+# Process management commands
 
  ```
  ## vim cheat sheet

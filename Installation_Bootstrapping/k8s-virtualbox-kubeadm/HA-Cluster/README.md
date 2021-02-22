@@ -60,6 +60,11 @@
  sysctl net.bridge.bridge-nf-call-iptables=1
  ```
  - Make sure all worker nodes have docker installed.
+ - Make sure SWAP is disabled.
+ ```
+ sudo swapoff -a
+ free -h
+ ```
 
 ## Stage 2: Administrative client preparation
  - Linux laptop is our administrative client & has SSH access to all other nodes.
@@ -130,32 +135,33 @@ Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
     ```
     - Save the output on a file.
     - The bootstrap token is valid for 24 hrs. Beyond that a new join token must be generated using kubeadm token create --print-join-command from control plane node.
+	- Configure kubeconfig at your home directory as regular user.
 
  - Verify the Cluster & component status
     ```
-      sudo kubectl cluster-info --kubeconfig=/etc/kubernetes/admin.conf
-      sudo kubectl get componentstatuses --kubeconfig=/etc/kubernetes/admin.conf
-      sudo kubectl get pods -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
-      sudo kubectl version --kubeconfig=/etc/kubernetes/admin.conf --short
-      sudo kubectl get nodes --kubeconfig=/etc/kubernetes/admin.conf
+      sudo kubectl cluster-info
+      sudo kubectl get componentstatuses
+      sudo kubectl get pods -n kube-system
+      sudo kubectl version
+      sudo kubectl get nodes
     ```
 ## Stage 6: Join other control plane nodes
  - SSH to other control plane nodes and run kubeadm join commandline for control plane.
  - Ensure that --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE_BEING_JOINED" is appended to kubeadm join commandline.
  - Verify the joining of control plane nodes by launching
  ```
- sudo kubectl get nodes --kubeconfig=/etc/kubernetes/admin.conf
+ sudo kubectl get nodes
  ```
  - Learning: Before re-tring Kubeadm init/join command on nodes, Run >sudo kubeadm reset -f 
 
 ## Stage 7: Install Pod Network add-on
  - Execute the following on all nodes except loadbalancer node
       ```
-      sudo kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(sudo kubectl version | base64 | tr -d '\n')"
+      sudo kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
       ```
   - List & verify all objects under kube-system namespace using the below command
       ```
-      sudo kubectl get all -n kube-system --kubeconfig=/etc/kubernetes/admin.conf
+      sudo kubectl get all -n kube-system
       ```
 
 ## Stage 8: Join worker nodes to cluster
@@ -164,7 +170,7 @@ Connection to LOAD_BALANCER_IP PORT port [tcp/*] succeeded!
  - Verify the status of joining.
   From control plane node. Execute the below command and output must list all nodes in STATUS:Ready
   ```
-  sudo kubectl get nodes --kubeconfig=/etc/kubernetes/admin.config
+  sudo kubectl get nodes
   ```
 ## Stage 9: Configure administrative client
  - Ensure that client node has kubectl installed that aligns with kubernetes version of the cluster that you wish to talk.

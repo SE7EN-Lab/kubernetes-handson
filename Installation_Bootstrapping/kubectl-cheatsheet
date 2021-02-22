@@ -1,6 +1,43 @@
+#### Imp URLs ###
+
 https://computingforgeeks.com/kubectl-cheat-sheet-for-kubernetes-cka-exam-prep/
+https://levelup.gitconnected.com/kubernetes-cka-example-uestions-practical-challenge-86318d85b4d
+killer.sh ---> CKA exam simulator
+----------------------------------------------------------------------------------------------------------------------------------
+## bash alias & settings
+
+alias k=kubectl
+export do="-o yaml --dry-run=client"
+-------------------------------------------------------------------------------------
+Disable swap permanently
+
+sudo swapon --show
+sudo swapoff -v /swapfile
+sudo sed -i '/swapfile/d' /etc/fstab
+sudo rm /swapfile
+
+#Re-start kubetelet systemd unit
+sudo systemctl restart kubelet.service
+
+#Restart systemd-resolved systemd unit
+sudo systemctl retsart systemd-resolved
 
 kubeadm config view
 kubectl describe nodes
 journalctl -u <systemd-unit-name>
 systemctl status <systemd-unit-name>
+
+# Check permission a subject has on resources in a cluster
+kubectl auth can-i <verb> <resources>--as <subject-name>
+
+kubectl create clusterrole secrets-mgr --verb="*" --resource=secrets
+kubectl create clusterrolebinding secrets-mgr-binding --user=<user-name> --clusterrole=secrets-mgr
+
+kubectl create clusterrole pods-mgr --verb='*' --resource=pods --resource-name=compute
+kubectl create clusterrolebinding pods-mgr-binding --clusterrole=pods-mgr --user=deploy@test.com
+
+kubectl create clusterrole secrets-reader --verb="get" --resource=secrets --resource-name=compute-secret
+kubectl create clusterrolebinding secrets-reader-binding --clusterrole=secrets-reader --user=deploy@test.com
+
+## kubectl with jsonpath
+

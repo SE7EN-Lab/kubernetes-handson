@@ -1,0 +1,9 @@
+Troubleshooting k8s
+Error: The connection to the server was refused - did you specify the right host or port? 
+1. Current user must have kubeconfiguration file set 
+2. check docker service running
+3. check kubelet service running
+4. Check kubelet service logs => journalctl -xeu kubelet
+4.1 if errors "node not found. failed: open /run/systemd/resolve/resolv.conf: no such file or directory", check systemd-resolved.service is running and enabled
+5. Check TCP port 6443 is listening
+6.  If TCP port isn't availble, check firewall/iptables rules.
