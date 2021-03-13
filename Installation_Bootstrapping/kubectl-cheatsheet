@@ -3,11 +3,26 @@
 https://computingforgeeks.com/kubectl-cheat-sheet-for-kubernetes-cka-exam-prep/
 https://levelup.gitconnected.com/kubernetes-cka-example-uestions-practical-challenge-86318d85b4d
 killer.sh ---> CKA exam simulator
+
+CKA prep:
+https://rudimartinsen.com/2021/01/14/cka-notes-troubleshooting/
+
+
+Fix kubectl get cs output unhealthy
+	https://stackoverflow.com/questions/64296491/how-to-resolve-scheduler-and-controller-manager-unhealthy-state-in-kubernetes
+	
+ETCD Back-up  & Restore
+	https://rudimartinsen.com/2020/12/30/backup-restore-etcd/
+	
 ----------------------------------------------------------------------------------------------------------------------------------
 ## bash alias & settings
 
-alias k=kubectl
-export do="-o yaml --dry-run=client"
+
+echo 'set nu ts=2 sw=2 expandtab ruler' > ~/.vimrc
+echo 'set backspace=indent,eol,start' >> ~/.vimrc
+source ~/.vimrc
+export do="--dry-run=client -o yaml"
+export now="--grace-period=0 --force"
 -------------------------------------------------------------------------------------
 Disable swap permanently
 
@@ -30,6 +45,11 @@ systemctl status <systemd-unit-name>
 # Check permission a subject has on resources in a cluster
 kubectl auth can-i <verb> <resources>--as <subject-name>
 
+# Sort events by creation time
+kubectl get events --sort-by='.metadata.creationTimestamp'
+
+
+
 kubectl create clusterrole secrets-mgr --verb="*" --resource=secrets
 kubectl create clusterrolebinding secrets-mgr-binding --user=<user-name> --clusterrole=secrets-mgr
 
@@ -41,3 +61,41 @@ kubectl create clusterrolebinding secrets-reader-binding --clusterrole=secrets-r
 
 ## kubectl with jsonpath
 
+## Inspecting etcd pod
+kubectl -n kube-system exec <etcd-pod-name> -- sh -c "etcdctl version"
+## Listing etcd member from etcd pod
+kubectl -n kube-system exec <etcd-pod-name> -- sh -c "ETCDCTL_API=3 etcdctl member list --write-out=table --endpoints=</path/to/advertise-client-urls> --cacert=</path/to/trusted-ca-file> --cert=</path/to/cert-file> --key=</path/to/key-file>"
+
+## Inspecting etcd from outside the cluster
+# Requires ETCDCTL binary to be downloaded, configured in /usr/local/bin and executed on one of the control plane node.
+
+## Back-up etcd cluster using etcdctl utility from outside the cluster
+	# Take a snapshot from a etcd member that generates a file "snapshotdb" on home directory of the node.
+			sudo ETCDCTL_API=3 etcdctl snapshot save <snapshotdb-name> --endpoints=</path/to/advertise-client-urls> --cacert=</path/to/trusted-ca-file> --cert=</path/to/cert-file> --key=</path/to/key-file>
+	# Verify the snapshot status from a etcd member
+			sudo ETCDCTL_API=3 etcdctl snapshot status <snapshotdb-name> --endpoints=</path/to/advertise-client-urls> --cacert=</path/to/trusted-ca-file> --cert=</path/to/cert-file> --key=</path/to/key-file>
+
+## Back-up etcd cluster manually from etcd member node
+	# Ensure the etcd process isn't running
+		Copy the "ETCD_DATA_DIR/member/snap/db"
+# In both cases, Back-up the certs that are required to be passed while using etcdctl utility for restore operation.
+
+## Restore an etcd cluster from a snapshot
+	# An etcd cluster can be restored from a snapshot taken on a cluster running the same MAJOR.MINOR version
+	# Restore the snaphot to a different data directory and update etcd pod manifest to point to the new data directory
+		sudo ECTDCTL_API=3 etcdctl snapshot restore <snapshotdb-name> --data-dir <path/to/new/data/dir> --name <node-name> --initial-cluster <NODE-NAME1>=https://<IP1>:2380,<NODE-NAME2>=https://<IP2>:2380,<NODE-NAME-N>=https://<IP-N>:2380 --initial-advertise-peer-urls https://<NODE-IP>:2380
+	# Update /etc/kubernetes/manifests/ectd.yaml
+		- --data-dir=/path/to/new/data/directory
+		volumes.hostPath.path: /path/to/new/data/directory
+	# Upon of updating etcd manifest, Verify that etcd pods get re-created automatically. If not, force delete the etcd pod and restart kubelet
+			kubectl -n kube-system delete pod <etcd-pod-name> --force --grace-period=0
+			sudo systemctl restart kubelet.service
+			
+## Get Pod IP network range for weave network plugin deployed in a cluster
+		kubectl -n kube-system logs <weave-pod> -c weave | grep -i ipalloc-range
+
+## Get IP range configured for service in a cluster
+		cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep cluster-ip-range
+
+## Jsonpath examples
+		https://medium.com/faun/kubectl-commands-cheatsheet-43ce8f13adfb

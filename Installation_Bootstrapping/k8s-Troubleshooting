@@ -1,4 +1,8 @@
 Troubleshooting k8s
+
+For further refrence:
+https://learnk8s.io/troubleshooting-deployments
+
 Error: The connection to the server was refused - did you specify the right host or port? 
 1. Current user must have kubeconfiguration file set 
 2. check docker service running
@@ -7,3 +11,26 @@ Error: The connection to the server was refused - did you specify the right host
 4.1 if errors "node not found. failed: open /run/systemd/resolve/resolv.conf: no such file or directory", check systemd-resolved.service is running and enabled
 5. Check TCP port 6443 is listening
 6.  If TCP port isn't availble, check firewall/iptables rules.
+
+For further refrence:
+https://learnk8s.io/troubleshooting-deployments
+
+
+
+Application Failure
+1. Follow bottom-up approach investigation - pod to service
+Most used command:
+kubectl -n <namespace> get all -o wide --show-labels
+
+Network failure:
+1. Check for service endpoints using kubectl get ep <service-name>
+2. Check the status of Pod nework.
+3. Check the status of Kube-proxy and CoreDNS.
+4. Get into a pod and launch nslookup a service name to confirm DNS resolution.
+
+Topics to cover:
+1.kubectl custom-columns
+
+2. Create a pod called secret-1401 in the admin1401 namespace using the busybox image. The container within the pod should be called secret-admin and should sleep for 4800 seconds.
+
+The container should mount a read-only secret volume called secret-volume at the path /etc/secret-volume. The secret being mounted has already been created for you and is called dotfile-secret.
