@@ -22,7 +22,9 @@ echo 'set nu ts=2 sw=2 expandtab ruler' > ~/.vimrc
 echo 'set backspace=indent,eol,start' >> ~/.vimrc
 source ~/.vimrc
 export do="--dry-run=client -o yaml"
+export dc="--dry-run=client"
 export now="--grace-period=0 --force"
+export ws="-o wide --show-labels"
 -------------------------------------------------------------------------------------
 Disable swap permanently
 

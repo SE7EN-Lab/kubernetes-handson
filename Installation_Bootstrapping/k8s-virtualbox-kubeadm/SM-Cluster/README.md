@@ -123,7 +123,7 @@ sudo rm /swapfile
  ```
  kubectl get nodes -o wide
  ```
- - Learning: Before re-tring Kubeadm init/join command on nodes, Run >sudo kubeadm reset -f 
+ - Learning: Before re-tring Kubeadm init/join command on nodes, Run "sudo kubeadm reset -f "
 
 ## Stage 7: Install Pod Network add-on
  - Execute the following on all nodes except loadbalancer node
@@ -206,7 +206,8 @@ sudo rm /swapfile
 		- Create a certificate signing request (CSR) for the user and send it to kubernetes API
 		```
 		openssl req -new -key <user-name>.key -subj "/CN=<user-name>/O=<group-name>" -out <user-name>.csr
-		
+		```
+		```
 		#create a yaml definition for CSR
 		apiVersion: certificates.k8s.io/v1
 		kind: CertificateSigningRequest

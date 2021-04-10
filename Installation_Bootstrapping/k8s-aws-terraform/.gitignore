@@ -1,0 +1,6 @@
+# Vagrant
+.vagrant/
+# Terraform
+.terraform*
+.terraform/
+**/.terraform/*

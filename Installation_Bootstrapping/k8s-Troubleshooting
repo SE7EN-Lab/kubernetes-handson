@@ -28,9 +28,8 @@ Network failure:
 3. Check the status of Kube-proxy and CoreDNS.
 4. Get into a pod and launch nslookup a service name to confirm DNS resolution.
 
-Topics to cover:
-1.kubectl custom-columns
-
-2. Create a pod called secret-1401 in the admin1401 namespace using the busybox image. The container within the pod should be called secret-admin and should sleep for 4800 seconds.
-
-The container should mount a read-only secret volume called secret-volume at the path /etc/secret-volume. The secret being mounted has already been created for you and is called dotfile-secret.
+Areas to focus:
+network policy
+jsonpath
+etcd backup & restore
+attach side car container
