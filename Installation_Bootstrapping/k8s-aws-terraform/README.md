@@ -20,3 +20,15 @@ Requirements:
 - EKS Node group configuration: 3 nodes (t2.medium)
 - AWS Load Balancer Controller
 - EFS storage class (via EFS provisioner)
+
+Upgrade EKS cluster using Terraform
+-----------------------------------
+
+Reference
+```
+https://www.bluematador.com/blog/upgrading-kubernetes-on-eks-with-terraform#:~:text=In%20this%20blog%20post%20we,EKS%20cluster%20managed%20by%20Terraform.&text=Update%20system%20component%20versions,worker%20group%20for%20worker%20nodes
+
+https://itnext.io/amazon-eks-upgrade-journey-from-1-18-to-1-19-cca82de84333
+https://github.com/marcincuber/eks/tree/master/terraform-aws
+
+```

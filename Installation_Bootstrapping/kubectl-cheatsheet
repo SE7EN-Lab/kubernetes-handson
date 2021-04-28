@@ -44,13 +44,27 @@ kubectl describe nodes
 journalctl -u <systemd-unit-name>
 systemctl status <systemd-unit-name>
 
+
 # Check permission a subject has on resources in a cluster
-kubectl auth can-i <verb> <resources>--as <subject-name>
+kubectl auth can-i <verb> <resources> --as <subject-name>
+
+# Get the changes a new definition is going to apply to a live object
+kubectl diff -f <file-name.yaml>
+kubectl apply -f <file-name.yaml>
+
+kubectl diff -R -f <folder-name>/
+kubectl apply -R -f <folder-name>/
 
 # Sort events by creation time
-kubectl get events --sort-by='.metadata.creationTimestamp'
+kubectl get events -A --sort-by='.metadata.creationTimestamp'
 
+kubectl create service [clusterip | nodeport | loadbalancer] -o yaml --dry-run=client
 
+# Create headless service definition
+kubectl create service clusterip my-svc --clusterip="None" -o yaml --dry-run=client > /tmp/srv.yaml
+
+# And edit the service object before creation
+kubectl create --edit -f /tmp/srv.yaml
 
 kubectl create clusterrole secrets-mgr --verb="*" --resource=secrets
 kubectl create clusterrolebinding secrets-mgr-binding --user=<user-name> --clusterrole=secrets-mgr
@@ -63,10 +77,24 @@ kubectl create clusterrolebinding secrets-reader-binding --clusterrole=secrets-r
 
 ## kubectl with jsonpath
 
+## Get Pod IP network range for weave network plugin deployed in a cluster
+		kubectl -n kube-system logs <weave-pod> -c weave | grep -i ipalloc-range
+
+# IP range configured for the services within the cluster
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep -i service-cluster-ip
+
 ## Inspecting etcd pod
 kubectl -n kube-system exec <etcd-pod-name> -- sh -c "etcdctl version"
 ## Listing etcd member from etcd pod
 kubectl -n kube-system exec <etcd-pod-name> -- sh -c "ETCDCTL_API=3 etcdctl member list --write-out=table --endpoints=</path/to/advertise-client-urls> --cacert=</path/to/trusted-ca-file> --cert=</path/to/cert-file> --key=</path/to/key-file>"
+
+## Endpoint status of ETCD pod
+kubectl -n kube-system exec <etcd-pod-name> -- sh -c "ETCDCTL_API=3 etcdctl endpoint status --write-out=table \
+	--endpoints=<https://IP1:2379>,https://IP2:2379 \
+	--cacert=</path/to/trusted-ca-file> \
+	--cert=</path/to/cert-file> \
+	--key=</path/to/key-file>"
+	
 
 ## Inspecting etcd from outside the cluster
 # Requires ETCDCTL binary to be downloaded, configured in /usr/local/bin and executed on one of the control plane node.
@@ -92,12 +120,6 @@ kubectl -n kube-system exec <etcd-pod-name> -- sh -c "ETCDCTL_API=3 etcdctl memb
 	# Upon of updating etcd manifest, Verify that etcd pods get re-created automatically. If not, force delete the etcd pod and restart kubelet
 			kubectl -n kube-system delete pod <etcd-pod-name> --force --grace-period=0
 			sudo systemctl restart kubelet.service
-			
-## Get Pod IP network range for weave network plugin deployed in a cluster
-		kubectl -n kube-system logs <weave-pod> -c weave | grep -i ipalloc-range
-
-## Get IP range configured for service in a cluster
-		cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep cluster-ip-range
 
 ## Jsonpath examples
 		https://medium.com/faun/kubectl-commands-cheatsheet-43ce8f13adfb

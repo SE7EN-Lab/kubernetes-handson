@@ -100,6 +100,8 @@
  # Auto completion for bash
 	# Verify auto-completetion is enabled on bash
 			type init_completion
+			
+	# Install auto-completion for kubectl		
 	
 	# Enable kubectl auto-completion
 			echo 'source <(kubectl completion bash)' >>~/.bashrc

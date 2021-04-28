@@ -1,5 +1,16 @@
 Troubleshooting k8s
 
+Symptom: kubectl command isn't showing any output
+- check the status of docker containers of control plane component => docker ps -a | grep -i
+- check logs of exited containers of control plane component => docker logs <container-id>
+- Locate the component that failed and inspect its manifest file under /etc/kubernetes/manifests/
+    => vi /etc/kubernetes/manifests/<component-in-error>.yaml
+- Check the path of all certs and key specified in manifest files while on vi mode
+    => ! ls -ltr </path/to/cert-key/file>
+- Identify and fix the path - exit by saving the changes to the manifest files.
+- Wait for auto-restart of the component's pod.
+
+
 For further refrence:
 https://learnk8s.io/troubleshooting-deployments
 
@@ -8,14 +19,10 @@ Error: The connection to the server was refused - did you specify the right host
 2. check docker service running
 3. check kubelet service running
 4. Check kubelet service logs => journalctl -xeu kubelet
-4.1 if errors "node not found. failed: open /run/systemd/resolve/resolv.conf: no such file or directory", check systemd-resolved.service is running and enabled
+4.1 if errors "node not found. failed: open /run/systemd/resolve/resolv.conf: no such file or directory", 
+        check systemd-resolved.service is running and enabled
 5. Check TCP port 6443 is listening
 6.  If TCP port isn't availble, check firewall/iptables rules.
-
-For further refrence:
-https://learnk8s.io/troubleshooting-deployments
-
-
 
 Application Failure
 1. Follow bottom-up approach investigation - pod to service

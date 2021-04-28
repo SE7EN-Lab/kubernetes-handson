@@ -94,7 +94,7 @@ sudo rm /swapfile
  
 ## Stage 5: Initialize Control plane node
  - kubeadm init commandline used for initializing control plane node.
- - Re-run kubeadm init, the cluster must be tear-downed.
+ - To re-run kubeadm init, the cluster must be tear-downed.
  - As a pre-requisite verify connectivity to gcr.io container image registry across all nodes except loadbalancer
       ```
       sudo kubeadm config images pull
@@ -105,7 +105,10 @@ sudo rm /swapfile
     sudo kubeadm init --v=5 --control-plane-endpoint "IP_ADDRESS_OF_CONTROL_PLANE_NODE:6443" --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE" --kubernetes-version "stable-1.20" --upload-certs --pod-network-cidr "10.32.0.0/12"
     ```
     - Save the output on a file.
-    - The bootstrap token is valid for 24 hrs. Beyond that a new join token must be generated using kubeadm token create --print-join-command from control plane node.
+    - The bootstrap token is valid for 24 hrs. Beyond that a new join commandline must be generated using below command from control plane node.
+    ```
+    kubeadm token create --print-join-command 
+    ```
 	- Configure kubeconfig at your home directory as regular user.
 
  - Verify the Cluster & component status
@@ -117,7 +120,7 @@ sudo rm /swapfile
       kubectl get nodes
     ```
 ## Stage 6: Join other control plane nodes
- - SSH to other control plane nodes and run kubeadm join commandline for control plane.
+ - SSH to other control plane nodes and run kubeadm join command for control plane.
  - Ensure that --apiserver-advertise-address "IP_ADDRESS_OF_CONTROLPLANE_NODE_BEING_JOINED" is appended to kubeadm join commandline.
  - Verify the joining of control plane nodes by launching
  ```
@@ -194,12 +197,12 @@ sudo rm /swapfile
     ```
 ## Stage 11: User authentication & authorization to cluster
  Pre-requisite:
-	- Namespace already exists on the cluster
+  - Namespace already exists on the cluster
 	- CA already exists that is trusted by kubernetes API
 	- Users exists either locally or on remote systems
 	- kubectl with appropriate version installed on user machine
  - Authentication (via client certs by openssl) leveraging Certficates API
-		- Create a private key for the user
+    - Create a private key for the user
 			```
 			openssl genrsa -out <user-name>.key 2048
 			```
@@ -207,7 +210,7 @@ sudo rm /swapfile
 		```
 		openssl req -new -key <user-name>.key -subj "/CN=<user-name>/O=<group-name>" -out <user-name>.csr
 		```
-		```
+    ```
 		#create a yaml definition for CSR
 		apiVersion: certificates.k8s.io/v1
 		kind: CertificateSigningRequest
@@ -224,11 +227,11 @@ sudo rm /swapfile
 		#Apply the definition
 			kubectl apply -f <csr.yaml>
 		```
-		- Approve CSR using kubectl 
+	  - Approve CSR using kubectl 
 			```
 			kubectl certificate approve <csr-name>
 			````
-		- Generate user cert using kubectl
+    - Generate user cert using kubectl
 			```
 			kubectl get csr <csr-name> -o jsonpath='{.status.certificate}' | base64 --decode > <user-name>.crt
 			```
@@ -242,7 +245,7 @@ sudo rm /swapfile
 		- Configure ~/.kube/config for the user
 		
 - Authorization of user to perform actions on cluster
-		- Create role with appropriate rules in a namespace
+	  - Create role with appropriate rules in a namespace
 			```
 			kubectl create role <role-name> -n <namespace> --verb=create --verb=get --verb=list --verb=update --verb=delete --resource='*'
 			```
